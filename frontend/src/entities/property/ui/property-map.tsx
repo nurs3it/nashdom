@@ -14,8 +14,8 @@ const MapImpl = dynamic(() => import('./_map-impl').then((m) => m.MapImpl), {
 });
 
 interface PropertyMapProps {
-  latitude?: number | null;
-  longitude?: number | null;
+  latitude?: string | number | null;
+  longitude?: string | number | null;
   address?: string;
   height?: number | string;
   showOpen2GIS?: boolean;

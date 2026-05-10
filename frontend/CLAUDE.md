@@ -32,8 +32,8 @@ src/
 │   ├── properties/               # /properties, /properties/[id]
 │   ├── dashboard/                # /dashboard, /dashboard/properties[/add|/[id]/edit]
 │   ├── favorites/, profile/, admin/
-├── pages/                        # FSD layer "pages" — композиции страниц (не Next pages!)
-│   ├── home/, properties/, dashboard/, auth/, admin/, favorites/, profile/
+│                                 # (отдельного pages/ слоя НЕТ — composition страниц
+│                                 # лежит прямо в src/app/<route>/page.tsx как default export)
 ├── widgets/                      # композитные блоки (header, footer, dashboard-shell, auth-shell, property-card)
 ├── features/                     # фичи с состоянием (search-bar, filter-sidebar, property-form)
 ├── entities/                     # доменные модели + UI
@@ -49,7 +49,9 @@ src/
 └── lib/                          # cn() и пр.
 ```
 
-**Правило слоёв FSD:** нижний слой не импортирует из верхнего. Цепочка вниз: `app → pages → widgets → features → entities → shared`. `components/ui` и `lib` фактически живут на уровне `shared`. Не нарушать.
+**Правило слоёв FSD:** нижний слой не импортирует из верхнего. Цепочка вниз: `app → widgets → features → entities → shared`. `components/ui` и `lib` фактически живут на уровне `shared`. Не нарушать.
+
+**Особенность:** в этом проекте нет отдельного FSD-слоя `pages/` — Next 15 даже при использовании App Router конфликтует с `src/pages/` (видит его как Pages Router). Composition страниц лежит прямо в `src/app/<route>/page.tsx` через `export default function Page()`. Если нужно расщепить большую страницу — положи частные подкомпоненты в тот же `app/<route>/_components/` (с подчёркиванием — Next игнорирует такие папки в роутинге).
 
 ## Дизайн-система
 
@@ -120,15 +122,12 @@ Leaflet + react-leaflet + OpenStreetMap (бесплатно, без ключа).
 ## Конвенции
 
 ### Создание новой страницы
-1. Файл-page в FSD `pages/<feature>/<feature>-page.tsx` (полная композиция)
-2. Next-роут в `app/<route>/page.tsx` — тонкий wrapper:
-   ```tsx
-   import { FeaturePage } from '@/pages/feature/feature-page';
-   export default function Page() { return <FeaturePage />; }
-   ```
-3. Если страница принадлежит кабинету — оборачивай в `<DashboardShell title=... subtitle=...>`
-4. Если auth — в `<AuthShell title=...>`
-5. Иначе — компонуй сам с `<Header />` + `<Footer />`
+1. Создай файл `src/app/<route>/page.tsx` с `export default function Page()`. Если нужны хуки — добавь `'use client'`
+2. Если страница принадлежит кабинету — оборачивай в `<DashboardShell title=... subtitle=...>`
+3. Если auth — в `<AuthShell title=...>`
+4. Иначе — компонуй сам с `<Header />` + `<Footer />`
+5. Если используешь `useSearchParams()` — оберни содержимое страницы в `<Suspense fallback={null}>` (требование Next 15 prerender). Пример: `app/properties/page.tsx`
+6. Для динамических роутов (`[id]`) — `const { id } = useParams() as { id: string }` для client component, либо `async function Page({ params }: { params: Promise<{ id: string }> })` + `await params` для server
 
 ### Новый shadcn компонент
 - Кладите в `components/ui/` (не в `shared/ui`!) — это контракт shadcn по `components.json`

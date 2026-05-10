@@ -123,7 +123,7 @@ function CardOverlay({ property, showFavorite }: { property: PropertyListItem; s
 }
 
 // ---- Standard (сетка каталога) ----
-function StandardCard({ property, className, showFavorite, showViews }: Required<Omit<PropertyCardProps, 'variant'>> & { className?: string }) {
+function StandardCard({ property, className, showFavorite, showViews }: Required<Omit<PropertyCardProps, 'variant' | 'className'>> & { className?: string }) {
   return (
     <Link
       href={`/properties/${property.id}`}
@@ -163,7 +163,7 @@ function StandardCard({ property, className, showFavorite, showViews }: Required
 }
 
 // ---- Featured (большая карточка для подборок) ----
-function FeaturedCard({ property, className, showFavorite }: Required<Omit<PropertyCardProps, 'variant' | 'showViews'>> & { className?: string }) {
+function FeaturedCard({ property, className, showFavorite }: Required<Omit<PropertyCardProps, 'variant' | 'showViews' | 'className'>> & { className?: string }) {
   return (
     <Link
       href={`/properties/${property.id}`}
@@ -199,7 +199,7 @@ function FeaturedCard({ property, className, showFavorite }: Required<Omit<Prope
 }
 
 // ---- Compact (горизонтальная — список / избранное) ----
-function CompactCard({ property, className, showFavorite }: Required<Omit<PropertyCardProps, 'variant' | 'showViews'>> & { className?: string }) {
+function CompactCard({ property, className, showFavorite }: Required<Omit<PropertyCardProps, 'variant' | 'showViews' | 'className'>> & { className?: string }) {
   return (
     <Link
       href={`/properties/${property.id}`}
@@ -242,7 +242,7 @@ function CompactCard({ property, className, showFavorite }: Required<Omit<Proper
 }
 
 // ---- Mini (для слайдера "похожие") ----
-function MiniCard({ property, className }: Required<Omit<PropertyCardProps, 'variant' | 'showViews' | 'showFavorite'>> & { className?: string }) {
+function MiniCard({ property, className }: Required<Omit<PropertyCardProps, 'variant' | 'showViews' | 'showFavorite' | 'className'>> & { className?: string }) {
   return (
     <Link
       href={`/properties/${property.id}`}

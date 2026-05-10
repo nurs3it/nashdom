@@ -94,8 +94,7 @@ NashDom/
 │   └── init_data.py        seed
 ├── frontend/               Next.js 15
 │   ├── src/
-│   │   ├── app/            App Router routes + providers
-│   │   ├── pages/          FSD pages-layer
+│   │   ├── app/            App Router routes + composition страниц + providers
 │   │   ├── widgets/        Header, Footer, DashboardShell, AuthShell
 │   │   ├── features/       SearchBar, Filters, PropertyForm
 │   │   ├── entities/       Property (Card, Map, Gallery, Badge, ...)
