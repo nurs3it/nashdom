@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight, Expand, ImageOff, Sparkles, X } from 'lucide-react';
 import {
@@ -21,11 +21,22 @@ interface PropertyImageGalleryProps {
 export function PropertyImageGallery({ images, title, className }: PropertyImageGalleryProps) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [failed, setFailed] = useState<Set<string>>(new Set());
 
-  const safe = images.length > 0 ? images : [];
+  // Отфильтровываем картинки, которые не загрузились
+  const safe = useMemo(() => images.filter((src) => !failed.has(src)), [images, failed]);
   const main = safe[0];
   const thumbs = safe.slice(1, 5);
   const moreCount = Math.max(0, safe.length - 5);
+
+  const markFailed = useCallback((src: string) => {
+    setFailed((prev) => {
+      if (prev.has(src)) return prev;
+      const next = new Set(prev);
+      next.add(src);
+      return next;
+    });
+  }, []);
 
   const openAt = (i: number) => {
     setActiveIndex(i);
@@ -52,6 +63,8 @@ export function PropertyImageGallery({ images, title, className }: PropertyImage
             sizes="(max-width: 768px) 100vw, 60vw"
             className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
             priority
+            unoptimized
+            onError={() => markFailed(main)}
           />
         </button>
         {thumbs.map((src, i) => (
@@ -67,6 +80,8 @@ export function PropertyImageGallery({ images, title, className }: PropertyImage
               fill
               sizes="20vw"
               className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+              unoptimized
+              onError={() => markFailed(src)}
             />
             {i === thumbs.length - 1 && moreCount > 0 && (
               <div className="absolute inset-0 grid place-items-center bg-sand-900/65 text-sand-50 backdrop-blur-sm">
