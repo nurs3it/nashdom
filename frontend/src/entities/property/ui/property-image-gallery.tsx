@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight, Expand, ImageOff, Home as HomeIcon, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Expand, ImageOff, Sparkles, X } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -33,30 +33,7 @@ export function PropertyImageGallery({ images, title, className }: PropertyImage
   };
 
   if (safe.length === 0) {
-    return (
-      <div
-        className={cn(
-          'relative w-full aspect-[16/9] overflow-hidden rounded-2xl border border-dashed border-border bg-sand-100 dark:bg-sand-850',
-          className,
-        )}
-      >
-        <div
-          aria-hidden
-          className="absolute inset-0 opacity-40 [background-image:radial-gradient(circle_at_1px_1px,theme(colors.sand-300)_1px,transparent_0)] [background-size:24px_24px] dark:opacity-15"
-        />
-        <div className="relative h-full w-full grid place-items-center text-center px-6">
-          <div>
-            <div className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-card text-muted-foreground shadow-sm mb-3">
-              <ImageOff className="h-8 w-8" strokeWidth={1.5} />
-            </div>
-            <p className="font-display text-lg font-semibold tracking-tight">Фотографий пока нет</p>
-            <p className="mt-1 text-sm text-muted-foreground max-w-xs mx-auto">
-              Свяжитесь с автором объявления — возможно, он пришлёт фото в личном сообщении.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+    return <EmptyGallery className={className} />;
   }
 
   return (
@@ -226,5 +203,117 @@ function Lightbox({
         </DialogContent>
       </DialogPortal>
     </Dialog>
+  );
+}
+
+/* ---------- Empty gallery (нет фото) ---------- */
+
+function EmptyGallery({ className }: { className?: string }) {
+  return (
+    <div className={cn('relative w-full', className)}>
+      <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-2 gap-2 overflow-hidden rounded-2xl">
+        {/* Главный «no-photo» блок — занимает 2x2 как обычная главная фотка */}
+        <div className="relative md:col-span-2 md:row-span-2 aspect-[4/3] md:aspect-auto overflow-hidden bg-gradient-to-br from-terra-100 via-sand-100 to-ochre-300/40 dark:from-sand-850 dark:via-sand-900 dark:to-sand-850">
+          {/* dot-pattern */}
+          <div
+            aria-hidden
+            className="absolute inset-0 opacity-40 [background-image:radial-gradient(circle_at_1px_1px,theme(colors.terra-300)_1px,transparent_0)] [background-size:24px_24px] dark:opacity-15"
+          />
+          {/* warm glow */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -top-24 -right-12 h-72 w-72 rounded-full bg-ochre-300/40 blur-3xl dark:bg-terra-500/20"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-20 -left-12 h-60 w-60 rounded-full bg-terra-300/30 blur-3xl dark:bg-terra-700/30"
+          />
+
+          {/* SVG-иллюстрация дома + камеры */}
+          <div className="relative h-full w-full grid place-items-center px-6 py-8">
+            <div className="text-center">
+              <HouseCameraIllustration />
+              <p className="font-display mt-4 text-xl sm:text-2xl font-semibold tracking-tight text-foreground">
+                Фотографий пока нет
+              </p>
+              <p className="mt-2 text-sm text-foreground/70 max-w-xs mx-auto leading-relaxed">
+                Автор объявления ещё не загрузил снимки. Уточните детали в звонке или сообщении.
+              </p>
+              <div className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-card/80 backdrop-blur-md border border-border/60 px-3 py-1.5 text-xs font-medium text-foreground/70 shadow-sm">
+                <Sparkles className="h-3.5 w-3.5 text-ochre-400" strokeWidth={2} />
+                Объявление ещё свежее
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 4 «thumb» плейсхолдера для сохранения пропорций bento */}
+        {Array.from({ length: 4 }).map((_, i) => (
+          <PlaceholderThumb key={i} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PlaceholderThumb() {
+  return (
+    <div className="relative hidden md:block aspect-square overflow-hidden bg-sand-100 dark:bg-sand-850">
+      <div
+        aria-hidden
+        className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_1px_1px,theme(colors.sand-300)_1px,transparent_0)] [background-size:18px_18px] dark:opacity-10"
+      />
+      <div className="absolute inset-0 grid place-items-center text-sand-300 dark:text-sand-700">
+        <ImageOff className="h-7 w-7" strokeWidth={1.25} />
+      </div>
+    </div>
+  );
+}
+
+function HouseCameraIllustration() {
+  return (
+    <svg
+      width="120"
+      height="120"
+      viewBox="0 0 120 120"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+      className="mx-auto drop-shadow-sm"
+    >
+      <defs>
+        <linearGradient id="house-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.95" />
+          <stop offset="100%" stopColor="#FBF4EE" stopOpacity="0.95" />
+        </linearGradient>
+        <linearGradient id="roof-grad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#D08252" />
+          <stop offset="100%" stopColor="#C26537" />
+        </linearGradient>
+      </defs>
+      {/* Тень под домом */}
+      <ellipse cx="60" cy="106" rx="30" ry="3.5" fill="rgba(56,32,16,0.18)" />
+      {/* Корпус дома */}
+      <rect x="28" y="48" width="64" height="50" rx="6" fill="url(#house-grad)" stroke="#7E3C20" strokeOpacity="0.5" strokeWidth="1.5" />
+      {/* Крыша — терракотовая */}
+      <path d="M22 50 L60 22 L98 50 Z" fill="url(#roof-grad)" stroke="#7E3C20" strokeOpacity="0.55" strokeWidth="1.5" strokeLinejoin="round" />
+      {/* Дверь */}
+      <rect x="54" y="74" width="12" height="24" rx="2" fill="#C26537" opacity="0.85" />
+      <circle cx="63" cy="86" r="0.9" fill="#FBF4EE" />
+      {/* Окна */}
+      <rect x="36" y="60" width="12" height="10" rx="1.5" fill="#3F7A8E" opacity="0.55" />
+      <rect x="72" y="60" width="12" height="10" rx="1.5" fill="#3F7A8E" opacity="0.55" />
+      {/* Камера-overlay сверху-справа */}
+      <g transform="translate(74, 12)">
+        <rect x="0" y="6" width="34" height="22" rx="4" fill="#1B1812" />
+        <rect x="10" y="2" width="14" height="8" rx="1.5" fill="#1B1812" />
+        <circle cx="17" cy="17" r="6.5" fill="#3D372D" stroke="#D08252" strokeWidth="1.5" />
+        <circle cx="17" cy="17" r="2.5" fill="#FBF4EE" />
+        {/* блик */}
+        <circle cx="15" cy="15.5" r="0.9" fill="#FFFFFF" />
+        {/* индикатор */}
+        <circle cx="29" cy="11" r="1.2" fill="#E5B547" />
+      </g>
+    </svg>
   );
 }
