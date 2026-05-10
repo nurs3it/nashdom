@@ -62,6 +62,9 @@ export function Header() {
   const setCity = (next: string) => {
     setCityState(next);
     setCookie(CITY_COOKIE, next);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('nashdom-city', { detail: next }));
+    }
   };
 
   return (

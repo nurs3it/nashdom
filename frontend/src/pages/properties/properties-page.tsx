@@ -3,13 +3,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Map as MapIcon, SearchX } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Map as MapIcon, SearchX } from 'lucide-react';
 import { Header } from '@/widgets/header/header';
 import { Footer } from '@/widgets/footer/footer';
 import { PropertyCard } from '@/entities/property';
 import { Button } from '@/components/ui/button';
 import { propertiesApi } from '@/shared/api';
 import { getDealKind } from '@/entities/property';
+import { getCookie } from '@/shared/lib/cookies';
+import { cn } from '@/lib/utils';
 import {
   FilterSidebar,
   FilterSheet,
@@ -21,7 +23,9 @@ import {
 } from '@/features/property-search';
 import type { PropertyFilters as PropertyFiltersType } from '@/shared/types/api';
 
-type FiltersUI = PropertyFiltersType & { deal?: string };
+type FiltersUI = PropertyFiltersType & { deal?: string; page?: number };
+
+const PAGE_SIZE = 20;
 
 function parseFiltersFromSearchParams(sp: URLSearchParams): FiltersUI {
   const out: FiltersUI = {};
@@ -35,6 +39,9 @@ function parseFiltersFromSearchParams(sp: URLSearchParams): FiltersUI {
       else out.deal = value; // slug-form: ?service_type=sale
     } else if (key === 'deal') {
       out.deal = value;
+    } else if (key === 'page') {
+      const n = parseInt(value, 10);
+      if (Number.isFinite(n) && n > 0) out.page = n;
     } else if (key === 'price_min' || key === 'price_max' || key === 'area_min' || key === 'area_max') {
       const n = parseFloat(value);
       if (Number.isFinite(n)) out[key] = n;
@@ -66,9 +73,32 @@ export function PropertiesPage() {
     staleTime: Infinity,
   });
 
+  // При первой загрузке: если в URL нет city, подставляем из cookie
   useEffect(() => {
-    setFilters(parseFiltersFromSearchParams(new URLSearchParams(searchParams.toString())));
+    const initial = parseFiltersFromSearchParams(new URLSearchParams(searchParams.toString()));
+    if (!initial.city) {
+      const cookieCity = getCookie('nashdom-city');
+      if (cookieCity) initial.city = cookieCity;
+    }
+    setFilters(initial);
   }, [searchParams]);
+
+  // Реактивно реагируем на смену города в Header
+  useEffect(() => {
+    const onCityChange = (e: Event) => {
+      const next = (e as CustomEvent<string>).detail;
+      if (!next) return;
+      setFilters((prev) => ({ ...prev, city: next, page: undefined }));
+      const params = new URLSearchParams();
+      Object.entries({ ...filters, city: next, page: undefined }).forEach(([k, v]) => {
+        if (v === undefined || v === null || v === '') return;
+        params.set(k, String(v));
+      });
+      router.replace(`/properties${params.toString() ? `?${params.toString()}` : ''}`);
+    };
+    window.addEventListener('nashdom-city', onCityChange);
+    return () => window.removeEventListener('nashdom-city', onCityChange);
+  }, [filters, router]);
 
   // Резолвим deal → service_type как только справочник пришёл
   useEffect(() => {
@@ -96,18 +126,28 @@ export function PropertiesPage() {
     queryFn: () => propertiesApi.getProperties({ ...apiFilters, ordering }),
   });
 
-  const updateFilters = (next: FiltersUI) => {
-    setFilters(next);
+  const updateFilters = (next: FiltersUI, opts: { keepPage?: boolean } = {}) => {
+    const finalNext = opts.keepPage ? next : { ...next, page: undefined };
+    setFilters(finalNext);
     const params = new URLSearchParams();
-    Object.entries(next).forEach(([key, value]) => {
+    Object.entries(finalNext).forEach(([key, value]) => {
       if (value === undefined || value === null || value === '') return;
       params.set(key, String(value));
     });
     router.replace(`/properties${params.toString() ? `?${params.toString()}` : ''}`);
   };
 
+  const goToPage = (page: number) => {
+    updateFilters({ ...filters, page: page > 1 ? page : undefined }, { keepPage: true });
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   const total = data?.count ?? 0;
   const results = data?.results ?? [];
+  const currentPage = filters.page ?? 1;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -192,12 +232,19 @@ export function PropertiesPage() {
                 </div>
               )}
 
-              {data && results.length > 0 && (
-                <div className="mt-10 flex items-center justify-center gap-3">
-                  <span className="text-sm text-muted-foreground">
-                    Показано <span className="font-semibold text-foreground tabular-nums">{results.length}</span> из{' '}
-                    <span className="font-semibold text-foreground tabular-nums">{total}</span>
-                  </span>
+              {data && results.length > 0 && totalPages > 1 && (
+                <PaginationBar
+                  page={currentPage}
+                  total={total}
+                  totalPages={totalPages}
+                  resultsLength={results.length}
+                  onPageChange={goToPage}
+                />
+              )}
+              {data && results.length > 0 && totalPages === 1 && (
+                <div className="mt-10 text-center text-sm text-muted-foreground">
+                  Показано <span className="font-semibold text-foreground tabular-nums">{results.length}</span> из{' '}
+                  <span className="font-semibold text-foreground tabular-nums">{total}</span>
                 </div>
               )}
             </section>
@@ -259,6 +306,116 @@ function MapPlaceholder({ count }: { count: number }) {
       </div>
     </div>
   );
+}
+
+function PaginationBar({
+  page,
+  total,
+  totalPages,
+  resultsLength,
+  onPageChange,
+}: {
+  page: number;
+  total: number;
+  totalPages: number;
+  resultsLength: number;
+  onPageChange: (p: number) => void;
+}) {
+  const pages = buildPageList(page, totalPages);
+  const from = (page - 1) * 20 + 1;
+  const to = Math.min(from + resultsLength - 1, total);
+
+  return (
+    <div className="mt-10 flex flex-col items-center gap-3">
+      <nav aria-label="Постраничная навигация" className="flex items-center gap-1">
+        <PageBtn
+          onClick={() => onPageChange(page - 1)}
+          disabled={page <= 1}
+          aria-label="Предыдущая страница"
+        >
+          <ChevronLeft className="h-4 w-4" strokeWidth={2} />
+        </PageBtn>
+        {pages.map((p, i) =>
+          p === '…' ? (
+            <span
+              key={`gap-${i}`}
+              className="inline-flex h-9 w-9 items-center justify-center text-muted-foreground tabular-nums"
+              aria-hidden
+            >
+              …
+            </span>
+          ) : (
+            <PageBtn
+              key={p}
+              active={p === page}
+              onClick={() => onPageChange(p)}
+              aria-label={`Страница ${p}`}
+              aria-current={p === page ? 'page' : undefined}
+            >
+              {p}
+            </PageBtn>
+          ),
+        )}
+        <PageBtn
+          onClick={() => onPageChange(page + 1)}
+          disabled={page >= totalPages}
+          aria-label="Следующая страница"
+        >
+          <ChevronRight className="h-4 w-4" strokeWidth={2} />
+        </PageBtn>
+      </nav>
+      <p className="text-xs text-muted-foreground tabular-nums">
+        {from}–{to} из {total}
+      </p>
+    </div>
+  );
+}
+
+function PageBtn({
+  active,
+  disabled,
+  onClick,
+  children,
+  ...props
+}: {
+  active?: boolean;
+  disabled?: boolean;
+  onClick?: () => void;
+  children: React.ReactNode;
+} & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'onClick'>) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        'inline-flex h-9 min-w-9 items-center justify-center px-2.5 rounded-md text-sm font-semibold tabular-nums transition-colors',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+        'disabled:opacity-40 disabled:cursor-not-allowed',
+        active
+          ? 'bg-primary text-primary-foreground border border-primary'
+          : 'bg-card border border-border text-foreground hover:bg-secondary',
+      )}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+}
+
+function buildPageList(current: number, total: number): (number | '…')[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+  const set = new Set<number>([1, total, current, current - 1, current + 1]);
+  // показываем + соседей у краёв
+  if (current <= 3) [2, 3, 4].forEach((p) => set.add(p));
+  if (current >= total - 2) [total - 1, total - 2, total - 3].forEach((p) => set.add(p));
+  const sorted = Array.from(set).filter((p) => p >= 1 && p <= total).sort((a, b) => a - b);
+  const out: (number | '…')[] = [];
+  for (let i = 0; i < sorted.length; i++) {
+    if (i > 0 && sorted[i] - sorted[i - 1] > 1) out.push('…');
+    out.push(sorted[i]);
+  }
+  return out;
 }
 
 function pluralizeRu(n: number, one: string, few: string, many: string): string {
