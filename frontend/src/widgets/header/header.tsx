@@ -39,10 +39,10 @@ import { ThemeToggle } from '@/shared/ui/theme-toggle';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS: { label: string; href: string; matchPrefix?: string }[] = [
-  { label: 'Купить', href: '/properties?service_type=sale', matchPrefix: '/properties' },
-  { label: 'Снять', href: '/properties?service_type=rent' },
-  { label: 'Посуточно', href: '/properties?service_type=daily' },
-  { label: 'Коммерческая', href: '/properties?service_type=commercial' },
+  { label: 'Купить', href: '/properties?deal=sale', matchPrefix: '/properties' },
+  { label: 'Снять', href: '/properties?deal=rent' },
+  { label: 'Посуточно', href: '/properties?deal=daily' },
+  { label: 'Коммерческая', href: '/properties?deal=commercial' },
   { label: 'Карта', href: '/properties?view=map' },
 ];
 
