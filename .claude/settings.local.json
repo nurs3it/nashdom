@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm -rf /Users/sharipnurseit/Documents/Projects/NashDom/frontend/.git)",
+      "Bash(git rm *)",
+      "Bash(git add *)",
+      "Bash(grep -E \"\\\\.env$|db\\\\.sqlite3|node_modules|venv|__pycache__|\\\\.next\")"
+    ]
+  }
+}
