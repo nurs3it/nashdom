@@ -2,7 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Eye, Home, MapPin } from 'lucide-react';
+import { useState } from 'react';
+import { Eye, MapPin } from 'lucide-react';
 import type { PropertyListItem } from '@/shared/types/api';
 import { MEDIA_URL } from '@/shared/config/api';
 import { cn } from '@/lib/utils';
@@ -10,6 +11,7 @@ import { formatRelativeDate, isNewListing } from '../lib/format';
 import { DealBadge, FeaturedBadge, NewBadge } from './property-badge';
 import { PriceTag } from './price-tag';
 import { FavoriteButton } from './favorite-button';
+import { PropertyThumbPlaceholder } from './property-thumb-placeholder';
 
 type Variant = 'standard' | 'featured' | 'compact' | 'mini';
 
@@ -38,31 +40,29 @@ function PropertyImage({
   zoom?: boolean;
 }) {
   const src = resolveImageSrc(property.main_image);
+  const [failed, setFailed] = useState(false);
+  const showImage = !!src && !failed;
+
   return (
-    <div
-      className={cn(
-        'relative w-full overflow-hidden bg-sand-100 dark:bg-sand-800',
-        ratio,
-      )}
-    >
-      {src ? (
+    <div className={cn('relative w-full overflow-hidden', ratio)}>
+      {showImage ? (
         <Image
-          src={src}
+          src={src!}
           alt={property.title}
           fill
           sizes={sizes}
+          unoptimized
+          onError={() => setFailed(true)}
           className={cn(
             'object-cover transition-transform duration-500 ease-out',
             zoom && 'group-hover:scale-[1.04]',
           )}
         />
       ) : (
-        <div className="flex h-full w-full items-center justify-center text-sand-400">
-          <Home className="h-12 w-12" strokeWidth={1.5} />
-        </div>
+        <PropertyThumbPlaceholder />
       )}
       {/* нижний градиент для читаемости overlay */}
-      {zoom && (
+      {zoom && showImage && (
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/30 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
       )}
     </div>

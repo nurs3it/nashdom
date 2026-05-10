@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { useAuth } from '@/app/providers/auth-provider';
 import { propertiesApi } from '@/shared/api';
-import { PriceTag, StatusBadge, formatRelativeDate } from '@/entities/property';
+import { PriceTag, PropertyThumbPlaceholder, StatusBadge, formatRelativeDate } from '@/entities/property';
 import { MEDIA_URL } from '@/shared/config/api';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -142,16 +142,8 @@ export function UserPropertiesPage() {
                 className="group rounded-2xl border border-border bg-card shadow-sm p-3 sm:p-4 transition-shadow hover:shadow-md"
               >
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Link href={`/properties/${p.id}`} className="block relative w-full sm:w-44 aspect-[4/3] shrink-0 rounded-xl overflow-hidden bg-sand-100 dark:bg-sand-800">
-                    {p.main_image ? (
-                      <img
-                        src={p.main_image.startsWith('http') ? p.main_image : `${MEDIA_URL}${p.main_image}`}
-                        alt={p.title}
-                        className="absolute inset-0 h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center text-sand-400">—</div>
-                    )}
+                  <Link href={`/properties/${p.id}`} className="block relative w-full sm:w-44 aspect-[4/3] shrink-0 rounded-xl overflow-hidden">
+                    <ListThumb src={p.main_image} alt={p.title} />
                   </Link>
                   <div className="flex-1 min-w-0 flex flex-col">
                     <div className="flex items-start justify-between gap-3">
@@ -212,6 +204,21 @@ export function UserPropertiesPage() {
         )}
       </div>
     </DashboardShell>
+  );
+}
+
+function ListThumb({ src, alt }: { src?: string | null; alt: string }) {
+  const [failed, setFailed] = useState(false);
+  const url = src ? (src.startsWith('http') ? src : `${MEDIA_URL}${src}`) : null;
+  if (!url || failed) return <PropertyThumbPlaceholder />;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={url}
+      alt={alt}
+      onError={() => setFailed(true)}
+      className="absolute inset-0 h-full w-full object-cover"
+    />
   );
 }
 
