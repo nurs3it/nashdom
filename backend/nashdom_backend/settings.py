@@ -213,6 +213,11 @@ CORS_ALLOWED_ORIGINS = config(
     default='http://localhost:3000,http://127.0.0.1:3000',
     cast=Csv(),
 )
+# Любые превью-деплои Vercel (и vercel.com на всякий)
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r'^https://([a-z0-9-]+\.)*vercel\.app$',
+    r'^https://([a-z0-9-]+\.)*vercel\.com$',
+]
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = config(
@@ -220,6 +225,11 @@ CSRF_TRUSTED_ORIGINS = config(
     default='http://localhost:3000,http://127.0.0.1:3000',
     cast=Csv(),
 )
+# Wildcard-ы для CSRF (Django 4.0+ поддерживает * в hostname)
+CSRF_TRUSTED_ORIGINS = list(CSRF_TRUSTED_ORIGINS) + [
+    'https://*.vercel.app',
+    'https://*.vercel.com',
+]
 
 
 # --- Security (только в prod) ---
