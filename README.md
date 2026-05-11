@@ -120,6 +120,7 @@ NashDom/
 - [`CLAUDE.md`](./CLAUDE.md) — точка входа для Claude Code / новых разработчиков
 - [`backend/CLAUDE.md`](./backend/CLAUDE.md) — конвенции и URL map бэкенда
 - [`frontend/CLAUDE.md`](./frontend/CLAUDE.md) — конвенции и FSD-структура фронта
+- [`DEPLOYMENT.md`](./DEPLOYMENT.md) — пошаговое развёртывание на Vercel + Render + Supabase
 - [`.claude/architecture.md`](./.claude/architecture.md) — высокоуровневая схема и потоки
 - [`.claude/business.md`](./.claude/business.md) — доменная модель и пользовательские флоу
 - [`.claude/features.md`](./.claude/features.md) — реестр фич с статусами

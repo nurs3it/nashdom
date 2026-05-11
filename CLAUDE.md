@@ -6,6 +6,7 @@
 
 - **Backend (Django + DRF)** → [`backend/CLAUDE.md`](./backend/CLAUDE.md)
 - **Frontend (Next.js 15 + FSD)** → [`frontend/CLAUDE.md`](./frontend/CLAUDE.md)
+- **Деплой (Vercel + Render + Supabase)** → [`DEPLOYMENT.md`](./DEPLOYMENT.md)
 - **Дизайн-система (контракт)** → [`frontend/design-system/MASTER.md`](./frontend/design-system/MASTER.md)
 - **Архитектура / стек / фичи / стиль** → [`.claude/`](./.claude/)
   - [`architecture.md`](./.claude/architecture.md) — слои, поток данных, граница backend↔frontend
