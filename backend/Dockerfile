@@ -31,6 +31,6 @@ CMD sh -c "python manage.py migrate --no-input && \
     gunicorn nashdom_backend.wsgi:application \
       --bind 0.0.0.0:${PORT:-8000} \
       --workers 2 \
-      --timeout 60 \
+      --timeout 120 \
       --access-logfile - \
       --error-logfile -"

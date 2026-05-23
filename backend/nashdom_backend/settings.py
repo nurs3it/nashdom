@@ -168,6 +168,11 @@ if USE_SUPABASE_STORAGE:
     AWS_S3_FILE_OVERWRITE = False
     AWS_DEFAULT_ACL = None
     AWS_QUERYSTRING_AUTH = False  # публичные ссылки
+    # Fail-fast: если эндпойнт недоступен — лучше быстро вернуть 500, чем держать
+    # gunicorn worker до его таймаута. boto3 по дефолту висит ~60с × 3 retry.
+    AWS_S3_CONNECT_TIMEOUT = 10
+    AWS_S3_READ_TIMEOUT = 30
+    AWS_S3_MAX_POOL_CONNECTIONS = 20
 
     STORAGES['default'] = {
         'BACKEND': 'storages.backends.s3boto3.S3Boto3Storage',
