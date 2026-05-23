@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/app/providers/auth-provider';
 import { cn } from '@/lib/utils';
+import { RequirePhoneDialog } from './require-phone-dialog';
 
 interface NavItem {
   href: string;
@@ -22,7 +23,7 @@ const NAV: NavItem[] = [
   { href: '/dashboard', label: 'Главная', icon: BarChart3, match: 'exact', roles: ['realtor', 'superadmin'] },
   { href: '/dashboard/properties', label: 'Мои объявления', icon: HomeIcon, match: 'prefix', roles: ['realtor', 'superadmin'] },
   { href: '/favorites', label: 'Избранное', icon: Heart, match: 'prefix' },
-  { href: '/profile', label: 'Профиль', icon: User, match: 'prefix', roles: ['client'] },
+  { href: '/profile', label: 'Профиль', icon: User, match: 'prefix' },
   { href: '/admin', label: 'Админ', icon: ShieldCheck, match: 'prefix', roles: ['superadmin'] },
 ];
 
@@ -51,6 +52,7 @@ export function DashboardShell({ title, subtitle, actions, children }: Dashboard
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <RequirePhoneDialog />
       <Header />
       <main className="flex-1 pb-24 lg:pb-12">
         <div className="container pt-6 lg:pt-10">

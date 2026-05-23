@@ -23,8 +23,8 @@ export default function Page() {
   const [form, setForm] = useState({ first_name: '', last_name: '', phone: '' });
 
   useEffect(() => {
-    if (!isLoading && (!isAuthenticated || user?.role !== 'client')) router.push('/');
-  }, [isAuthenticated, isLoading, user, router]);
+    if (!isLoading && !isAuthenticated) router.push('/auth/login');
+  }, [isAuthenticated, isLoading, router]);
 
   useEffect(() => {
     if (user) setForm({ first_name: user.first_name || '', last_name: user.last_name || '', phone: user.phone || '' });
@@ -47,7 +47,10 @@ export default function Page() {
       </div>
     );
   }
-  if (!isAuthenticated || user?.role !== 'client') return null;
+  if (!isAuthenticated) return null;
+
+  const roleLabel =
+    user?.role === 'superadmin' ? 'Администратор' : user?.role === 'realtor' ? 'Риелтор' : 'Клиент';
 
   const initial = (user?.first_name?.[0] || user?.username?.[0] || '?').toUpperCase();
   const displayName =
@@ -124,7 +127,7 @@ export default function Page() {
               <div className="flex items-center justify-between">
                 <dt className="text-muted-foreground">Роль</dt>
                 <dd>
-                  <Badge variant="secondary" size="md">Клиент</Badge>
+                  <Badge variant="secondary" size="md">{roleLabel}</Badge>
                 </dd>
               </div>
               <div className="flex items-center justify-between">
