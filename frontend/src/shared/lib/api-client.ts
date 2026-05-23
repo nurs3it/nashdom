@@ -204,17 +204,23 @@ class ApiClient {
     return this.request<T>(endpoint, { method: 'DELETE' });
   }
 
-  async uploadFile<T>(endpoint: string, formData: FormData): Promise<T> {
+  async uploadFile<T>(
+    endpoint: string,
+    formData: FormData,
+    method: 'POST' | 'PUT' | 'PATCH' = 'POST',
+  ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
-    
+
+    // NB: НЕ выставляем Content-Type вручную — браузер сам добавит
+    // multipart/form-data с правильным boundary.
     const headers: Record<string, string> = {};
-    
+
     if (this.token) {
       headers.Authorization = `Bearer ${this.token}`;
     }
 
     const response = await fetch(url, {
-      method: 'POST',
+      method,
       headers,
       body: formData,
     });

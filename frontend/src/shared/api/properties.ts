@@ -40,9 +40,13 @@ export const propertiesApi = {
     return apiClient.uploadFile<Property>(API_CONFIG.ENDPOINTS.PROPERTIES.CREATE, propertyData);
   },
 
-  // Обновление объекта
+  // Обновление объекта (PATCH — частичное обновление; бэк отдаёт 405 на POST на /update/)
   updateProperty: async (id: number, propertyData: FormData): Promise<Property> => {
-    return apiClient.uploadFile<Property>(API_CONFIG.ENDPOINTS.PROPERTIES.UPDATE(id), propertyData);
+    return apiClient.uploadFile<Property>(
+      API_CONFIG.ENDPOINTS.PROPERTIES.UPDATE(id),
+      propertyData,
+      'PATCH',
+    );
   },
 
   // Удаление объекта
