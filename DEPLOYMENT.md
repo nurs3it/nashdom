@@ -30,16 +30,23 @@
 3. URL вида: `postgresql://postgres.alwwbhigzkzxeyzkpiop:[YOUR-PASSWORD]@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres`
 4. Подставь реальный пароль на место `[YOUR-PASSWORD]` (если в нём `!` — может потребоваться URL-encode `%21`)
 
-### 1.3 (опционально) Настроить Storage для медиа
-Можно отложить — на старте Render отдаёт media с локального диска. Но **диск Render эфемерный** — при каждом редеплое медиа пропадают. Когда соберёшь >5 объявлений — обязательно перейди на Supabase Storage.
+### 1.3 Настроить Storage для медиа (обязательно)
+Диск Render **эфемерный** — при каждом редеплое / засыпании контейнера все загруженные фото исчезают. Поэтому медиа сразу на Supabase Storage, без отлагательств.
 
-1. Storage → **New bucket** → name `media` → **Public** ✓ → Create
-2. Project Settings → **Storage** → **S3 Connection** (или API Settings → S3) → Generate new keys
-3. Сохрани:
-   - **Access Key ID:** `…`
-   - **Secret Access Key:** `…`
-   - **Region:** `ap-northeast-1`
-   - **Endpoint:** `https://alwwbhigzkzxeyzkpiop.supabase.co/storage/v1/s3`
+1. **Storage → New bucket** → name `media` → **Public bucket** ✓ → Create
+2. **Storage → S3 Connection** → Enable → **New access key** → сохрани:
+   - **Access Key ID** и **Secret Access Key** (показываются один раз!)
+   - **Region** — например `ap-northeast-1`
+   - **Endpoint** — формат `https://<project-ref>.storage.supabase.co/storage/v1/s3`
+3. Из endpoint вытащи `<project-ref>` (часть до `.storage.supabase.co`) — это `SUPABASE_PROJECT_ID`.
+
+> ⚠️ **Внимание:** S3 API живёт на поддомене `*.storage.supabase.co` (с `.storage`), а публичные URL картинок — на `*.supabase.co` (без). Это уже учтено в `settings.py`, ничего руками править не нужно — просто передай `SUPABASE_PROJECT_ID` без префикса.
+
+После переключения старые записи `PropertyImage`, чьи файлы лежали на эфемерном диске Render, останутся в БД, но картинки физически утеряны. Удали их одной командой через Render Shell:
+```bash
+python manage.py cleanup_missing_images --dry-run   # сначала посмотреть
+python manage.py cleanup_missing_images             # удалить битые
+```
 
 ---
 
@@ -187,7 +194,12 @@ python manage.py createsuperuser  # опционально, для /admin/
 
 ### Медиа не загружаются
 - Если `USE_SUPABASE_STORAGE=False`: после редеплоя Render все файлы пропали (диск эфемерный). Включай Storage.
-- Если `True`: проверь bucket `media` существует и **Public**, S3-keys свежие.
+- Если `True`:
+  - `SUPABASE_PROJECT_ID` — это **только ref** (`abcdwxyz`), без `.supabase.co`, без `https://`.
+  - Bucket `media` существует и помечен **Public** (иначе нужны signed URL — не наш случай).
+  - S3-keys свежие, не отозваны.
+  - В логах Render при загрузке нет `EndpointConnectionError` / `SignatureDoesNotMatch` / `403`.
+- **Старые битые ссылки** (записи в БД на файлы с эфемерного диска): зачисти через Render Shell — `python manage.py cleanup_missing_images`.
 
 ### Vercel build fails
 - Чаще всего — TS-ошибки. ESLint у нас отключён при build (`next.config.js`), но типы строгие. Локально: `npm run build`.

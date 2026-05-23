@@ -159,7 +159,9 @@ if USE_SUPABASE_STORAGE:
     AWS_ACCESS_KEY_ID = config('SUPABASE_S3_KEY_ID')
     AWS_SECRET_ACCESS_KEY = config('SUPABASE_S3_SECRET')
     AWS_STORAGE_BUCKET_NAME = SUPABASE_BUCKET
-    AWS_S3_ENDPOINT_URL = f'https://{SUPABASE_PROJECT_ID}.supabase.co/storage/v1/s3'
+    # NB: S3 API живёт на поддомене *.storage.supabase.co (не *.supabase.co).
+    # Публичные object-URL — наоборот, на *.supabase.co (см. MEDIA_URL ниже).
+    AWS_S3_ENDPOINT_URL = f'https://{SUPABASE_PROJECT_ID}.storage.supabase.co/storage/v1/s3'
     AWS_S3_REGION_NAME = SUPABASE_S3_REGION
     AWS_S3_ADDRESSING_STYLE = 'path'
     AWS_S3_SIGNATURE_VERSION = 's3v4'
