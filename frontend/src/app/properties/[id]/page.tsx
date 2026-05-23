@@ -32,6 +32,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/app/providers/auth-provider';
 import { propertiesApi } from '@/shared/api';
 import { MEDIA_URL } from '@/shared/config/api';
+import { buildWhatsAppUrl } from '@/shared/lib/whatsapp';
 import {
   DealBadge,
   FeaturedBadge,
@@ -102,6 +103,12 @@ export default function Page() {
 
   if (isLoading) return <DetailSkeleton />;
   if (error || !property) return <NotFound />;
+
+  // WhatsApp deeplink с предзаполненным текстом — null если у владельца нет валидного номера
+  const whatsappUrl = buildWhatsAppUrl(
+    property.owner.phone,
+    `Здравствуйте! Заинтересовало ваше объявление «${property.title}» — ${typeof window !== 'undefined' ? window.location.href : ''}`,
+  );
 
   const allImages = [
     ...(property.main_image
@@ -266,9 +273,13 @@ export default function Page() {
                       </a>
                     </Button>
                   )}
-                  <Button size="lg" variant="outline">
-                    <MessageCircle className="h-4 w-4" strokeWidth={1.75} /> Написать
-                  </Button>
+                  {whatsappUrl && (
+                    <Button asChild size="lg" variant="outline">
+                      <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                        <MessageCircle className="h-4 w-4" strokeWidth={1.75} /> Написать в WhatsApp
+                      </a>
+                    </Button>
+                  )}
                   <div className="grid grid-cols-2 gap-2">
                     <Button variant="ghost" onClick={onFavorite} disabled={favorite.isPending}>
                       <Heart
@@ -350,16 +361,27 @@ export default function Page() {
         <div className="container flex items-center justify-between gap-3 py-3">
           <PriceTag price={property.price} serviceSlug={property.service_type?.slug} size="lg" />
           {property.owner.phone ? (
+            <div className="flex items-center gap-2">
+              <Button asChild size="lg">
+                <a href={`tel:${property.owner.phone}`}>
+                  <Phone className="h-4 w-4" strokeWidth={1.75} /> Позвонить
+                </a>
+              </Button>
+              {whatsappUrl && (
+                <Button asChild size="lg" variant="outline" aria-label="Написать в WhatsApp">
+                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                    <MessageCircle className="h-4 w-4" strokeWidth={1.75} />
+                  </a>
+                </Button>
+              )}
+            </div>
+          ) : whatsappUrl ? (
             <Button asChild size="lg">
-              <a href={`tel:${property.owner.phone}`}>
-                <Phone className="h-4 w-4" strokeWidth={1.75} /> Позвонить
+              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                <MessageCircle className="h-4 w-4" strokeWidth={1.75} /> Написать
               </a>
             </Button>
-          ) : (
-            <Button size="lg">
-              <MessageCircle className="h-4 w-4" strokeWidth={1.75} /> Написать
-            </Button>
-          )}
+          ) : null}
         </div>
       </div>
 

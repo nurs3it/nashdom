@@ -17,7 +17,7 @@ from .serializers import (
     PropertyStatsSerializer
 )
 from .filters import PropertyFilter
-from users.permissions import IsOwnerOrReadOnly, IsSuperAdminUser, IsRealtorOrSuperAdmin
+from users.permissions import IsOwnerOrReadOnly, IsOwnerOrSuperAdmin, IsSuperAdminUser, IsRealtorOrSuperAdmin
 
 
 class PropertyTypeListView(generics.ListAPIView):
@@ -76,9 +76,9 @@ class PropertyCreateView(generics.CreateAPIView):
 
 
 class PropertyUpdateView(generics.UpdateAPIView):
-    """Обновление объекта недвижимости"""
+    """Обновление объекта недвижимости (владелец или superadmin)"""
     serializer_class = PropertyCreateUpdateSerializer
-    permission_classes = [IsOwnerOrReadOnly]
+    permission_classes = [IsOwnerOrSuperAdmin]
     
     def get_queryset(self):
         # Супер-админы видят все объекты, пользователи только свои
@@ -89,8 +89,8 @@ class PropertyUpdateView(generics.UpdateAPIView):
 
 
 class PropertyDeleteView(generics.DestroyAPIView):
-    """Удаление объекта недвижимости"""
-    permission_classes = [IsOwnerOrReadOnly]
+    """Удаление объекта недвижимости (владелец или superadmin)"""
+    permission_classes = [IsOwnerOrSuperAdmin]
     
     def get_queryset(self):
         # Супер-админы могут удалять любые объекты, пользователи только свои
