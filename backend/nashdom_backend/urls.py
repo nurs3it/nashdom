@@ -15,12 +15,25 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.db import connection
+from django.http import HttpResponse
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+
+
+def health_view(_request):
+    """Healthcheck: пингует БД, возвращает plain text 'ok' / 'not'."""
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT 1')
+            cursor.fetchone()
+        return HttpResponse('ok', content_type='text/plain')
+    except Exception:
+        return HttpResponse('not', content_type='text/plain', status=503)
 
 # Swagger configuration
 schema_view = get_schema_view(
@@ -37,7 +50,11 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    
+
+    # Healthcheck (plain text)
+    path('health', health_view),
+    path('health/', health_view),
+
     # API endpoints
     path('api/auth/', include('users.urls')),
     path('api/properties/', include('properties.urls')),
