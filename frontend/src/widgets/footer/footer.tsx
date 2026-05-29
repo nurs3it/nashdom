@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Mail, MapPin, Phone } from 'lucide-react';
+import { Phone } from 'lucide-react';
 
 const NAV_SECTIONS: { title: string; links: { label: string; href: string }[] }[] = [
   {
@@ -67,25 +67,12 @@ export function Footer() {
             <ul className="space-y-2.5 text-sm">
               <li>
                 <a
-                  href="tel:+77771234567"
+                  href="tel:+77012891220"
                   className="inline-flex items-center gap-2 text-foreground/80 hover:text-foreground transition-colors tabular-nums"
                 >
                   <Phone className="h-4 w-4 text-primary" strokeWidth={1.75} />
-                  +7 (777) 123-45-67
+                  +7 (701) 289 1220
                 </a>
-              </li>
-              <li>
-                <a
-                  href="mailto:info@nashdom.kz"
-                  className="inline-flex items-center gap-2 text-foreground/80 hover:text-foreground transition-colors"
-                >
-                  <Mail className="h-4 w-4 text-primary" strokeWidth={1.75} />
-                  info@nashdom.kz
-                </a>
-              </li>
-              <li className="inline-flex items-start gap-2 text-foreground/80">
-                <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" strokeWidth={1.75} />
-                <span>Алматы, ул. Абая 123</span>
               </li>
             </ul>
           </div>
