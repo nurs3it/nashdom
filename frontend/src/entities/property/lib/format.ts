@@ -50,41 +50,41 @@ export function getDealLabel(deal: DealKind): string {
 
 /* ---------- Площадь ---------- */
 
-/** Slug типа недвижимости «Участок» — у него площадь измеряется в гектарах. */
+/** Slug типа недвижимости «Участок» — у него площадь измеряется в сотках. */
 export const LAND_TYPE_SLUG = 'land';
-/** Квадратных метров в одном гектаре. */
-export const SQM_PER_HECTARE = 10_000;
+/** Квадратных метров в одной сотке (ар). */
+export const SQM_PER_SOTKA = 100;
 
 const areaFormatter = new Intl.NumberFormat('ru-KZ', { maximumFractionDigits: 2 });
 
-/** Участок ли это — для такого типа площадь показываем в гектарах. */
+/** Участок ли это — для такого типа площадь показываем в сотках. */
 export function isLandType(slug?: string | null): boolean {
   return (slug ?? '').toLowerCase() === LAND_TYPE_SLUG;
 }
 
 /** Единица измерения площади для типа недвижимости. */
-export function getAreaUnit(slug?: string | null): 'га' | 'м²' {
-  return isLandType(slug) ? 'га' : 'м²';
+export function getAreaUnit(slug?: string | null): 'сот.' | 'м²' {
+  return isLandType(slug) ? 'сот.' : 'м²';
 }
 
 /**
- * Площадь в БД хранится всегда в м². Для участков переводим в гектары.
- * Возвращает строку вида «12 га» или «64 м²».
+ * Площадь в БД хранится всегда в м². Для участков переводим в сотки.
+ * Возвращает строку вида «8 сот.» или «64 м²».
  */
 export function formatArea(area?: number | null, slug?: string | null): string {
   if (area == null || !Number.isFinite(area)) return '—';
-  if (isLandType(slug)) return `${areaFormatter.format(area / SQM_PER_HECTARE)} га`;
+  if (isLandType(slug)) return `${areaFormatter.format(area / SQM_PER_SOTKA)} сот.`;
   return `${areaFormatter.format(area)} м²`;
 }
 
 /** Значение из поля ввода (в единице типа) → м² для бэкенда. */
 export function areaInputToSqm(value: number, slug?: string | null): number {
-  return isLandType(slug) ? value * SQM_PER_HECTARE : value;
+  return isLandType(slug) ? value * SQM_PER_SOTKA : value;
 }
 
 /** м² из бэкенда → значение для поля ввода (в единице типа). */
 export function sqmToAreaInput(area: number, slug?: string | null): number {
-  return isLandType(slug) ? area / SQM_PER_HECTARE : area;
+  return isLandType(slug) ? area / SQM_PER_SOTKA : area;
 }
 
 export function formatPropertySpecs(p: Pick<PropertyListItem, 'rooms' | 'area' | 'property_type'>): string[] {

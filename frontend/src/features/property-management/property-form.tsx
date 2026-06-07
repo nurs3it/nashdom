@@ -50,7 +50,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
     city: property?.city ?? '',
     district: property?.district ?? '',
     address: property?.address ?? '',
-    // В БД площадь всегда в м². Для участка показываем введённое значение в гектарах.
+    // В БД площадь всегда в м². Для участка показываем введённое значение в сотках.
     area: property?.area != null ? String(sqmToAreaInput(property.area, property.property_type?.slug)) : '',
     rooms: property?.rooms?.toString() ?? '',
     floor: property?.floor?.toString() ?? '',
@@ -76,7 +76,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
     queryFn: propertiesApi.getServiceTypes,
   });
 
-  // Для участка площадь вводится и показывается в гектарах (в БД хранится в м²).
+  // Для участка площадь вводится и показывается в сотках (в БД хранится в м²).
   const selectedType = propertyTypes?.find((t) => String(t.id) === formData.property_type);
   const isLand = isLandType(selectedType?.slug);
 
@@ -216,14 +216,14 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
               className="h-11 tabular-nums"
             />
           </Field>
-          <Field id="area" label={isLand ? 'Площадь, га' : 'Площадь, м²'} required error={errors.area} icon={<Ruler className="h-4 w-4" />}>
+          <Field id="area" label={isLand ? 'Площадь, соток' : 'Площадь, м²'} required error={errors.area} icon={<Ruler className="h-4 w-4" />}>
             <Input
               id="area"
               type="number"
               inputMode="decimal"
               min={0}
-              step={isLand ? 0.01 : 0.1}
-              placeholder={isLand ? '0.12' : '64'}
+              step={0.1}
+              placeholder={isLand ? '8' : '64'}
               value={formData.area}
               onChange={(e) => set('area', e.target.value)}
               aria-invalid={!!errors.area}

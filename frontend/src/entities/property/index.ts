@@ -18,7 +18,7 @@ export {
   getAreaUnit,
   areaInputToSqm,
   sqmToAreaInput,
-  SQM_PER_HECTARE,
+  SQM_PER_SOTKA,
   LAND_TYPE_SLUG,
   type DealKind,
 } from './lib/format';
