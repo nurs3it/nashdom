@@ -48,10 +48,49 @@ export function getDealLabel(deal: DealKind): string {
   }
 }
 
+/* ---------- Площадь ---------- */
+
+/** Slug типа недвижимости «Участок» — у него площадь измеряется в гектарах. */
+export const LAND_TYPE_SLUG = 'land';
+/** Квадратных метров в одном гектаре. */
+export const SQM_PER_HECTARE = 10_000;
+
+const areaFormatter = new Intl.NumberFormat('ru-KZ', { maximumFractionDigits: 2 });
+
+/** Участок ли это — для такого типа площадь показываем в гектарах. */
+export function isLandType(slug?: string | null): boolean {
+  return (slug ?? '').toLowerCase() === LAND_TYPE_SLUG;
+}
+
+/** Единица измерения площади для типа недвижимости. */
+export function getAreaUnit(slug?: string | null): 'га' | 'м²' {
+  return isLandType(slug) ? 'га' : 'м²';
+}
+
+/**
+ * Площадь в БД хранится всегда в м². Для участков переводим в гектары.
+ * Возвращает строку вида «12 га» или «64 м²».
+ */
+export function formatArea(area?: number | null, slug?: string | null): string {
+  if (area == null || !Number.isFinite(area)) return '—';
+  if (isLandType(slug)) return `${areaFormatter.format(area / SQM_PER_HECTARE)} га`;
+  return `${areaFormatter.format(area)} м²`;
+}
+
+/** Значение из поля ввода (в единице типа) → м² для бэкенда. */
+export function areaInputToSqm(value: number, slug?: string | null): number {
+  return isLandType(slug) ? value * SQM_PER_HECTARE : value;
+}
+
+/** м² из бэкенда → значение для поля ввода (в единице типа). */
+export function sqmToAreaInput(area: number, slug?: string | null): number {
+  return isLandType(slug) ? area / SQM_PER_HECTARE : area;
+}
+
 export function formatPropertySpecs(p: Pick<PropertyListItem, 'rooms' | 'area' | 'property_type'>): string[] {
   const parts: string[] = [];
   if (p.rooms) parts.push(`${p.rooms}-комн`);
-  if (p.area) parts.push(`${p.area} м²`);
+  if (p.area) parts.push(formatArea(p.area, p.property_type?.slug));
   return parts;
 }
 

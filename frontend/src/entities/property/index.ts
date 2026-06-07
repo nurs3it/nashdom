@@ -13,5 +13,12 @@ export {
   getDealLabel,
   formatRelativeDate,
   isNewListing,
+  formatArea,
+  isLandType,
+  getAreaUnit,
+  areaInputToSqm,
+  sqmToAreaInput,
+  SQM_PER_HECTARE,
+  LAND_TYPE_SLUG,
   type DealKind,
 } from './lib/format';

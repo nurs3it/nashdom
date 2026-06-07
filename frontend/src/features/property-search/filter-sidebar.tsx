@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { propertiesApi } from '@/shared/api';
 import type { PropertyFilters as PropertyFiltersType } from '@/shared/types/api';
+import { isLandType, SQM_PER_HECTARE } from '@/entities/property';
 import { cn } from '@/lib/utils';
 
 interface Props {
@@ -66,6 +67,11 @@ export function FilterSidebar({
   };
 
   const activeCount = Object.keys(local).filter((k) => k !== 'ordering' && local[k as keyof PropertyFiltersType] !== undefined).length;
+
+  // Если выбран тип «Участок» — площадь в фильтре показываем в гектарах (в БД/запросе остаётся м²).
+  const landType = propertyTypes?.find((t) => isLandType(t.slug));
+  const isLandSelected = landType != null && local.property_type === landType.id;
+  const areaDivisor = isLandSelected ? SQM_PER_HECTARE : 1;
 
   return (
     <div
@@ -152,15 +158,15 @@ export function FilterSidebar({
         </Section>
 
         {/* Площадь */}
-        <Section title="Площадь, м²" icon={<Ruler className="h-4 w-4" strokeWidth={1.75} />}>
+        <Section title={`Площадь, ${isLandSelected ? 'га' : 'м²'}`} icon={<Ruler className="h-4 w-4" strokeWidth={1.75} />}>
           <RangeInputs
-            min={local.area_min}
-            max={local.area_max}
+            min={local.area_min != null ? local.area_min / areaDivisor : undefined}
+            max={local.area_max != null ? local.area_max / areaDivisor : undefined}
             onChange={(min, max) => {
-              set('area_min', min);
-              set('area_max', max);
+              set('area_min', min != null ? min * areaDivisor : undefined);
+              set('area_max', max != null ? max * areaDivisor : undefined);
             }}
-            step={1}
+            step={isLandSelected ? 0.1 : 1}
           />
         </Section>
 

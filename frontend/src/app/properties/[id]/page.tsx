@@ -41,7 +41,9 @@ import {
   PropertyImageGallery,
   PropertyCard,
   PropertyMap,
+  formatArea,
   formatRelativeDate,
+  isLandType,
   isNewListing,
 } from '@/entities/property';
 import { cn } from '@/lib/utils';
@@ -182,10 +184,10 @@ export default function Page() {
 
               {/* Bento — Key facts */}
               <section>
-                <SectionTitle eyebrow="Параметры" title="О квартире" />
+                <SectionTitle eyebrow="Параметры" title={isLandType(property.property_type?.slug) ? 'Об участке' : 'О квартире'} />
                 <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                   <Tile icon={<HomeIcon className="h-5 w-5" />} label="Тип" value={property.property_type?.name} />
-                  <Tile icon={<Ruler className="h-5 w-5" />} label="Площадь" value={`${property.area} м²`} />
+                  <Tile icon={<Ruler className="h-5 w-5" />} label="Площадь" value={formatArea(property.area, property.property_type?.slug)} />
                   {property.rooms !== undefined && property.rooms !== null && (
                     <Tile icon={<Bed className="h-5 w-5" />} label="Комнаты" value={String(property.rooms)} />
                   )}

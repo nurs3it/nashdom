@@ -7,7 +7,7 @@ import { Eye, MapPin } from 'lucide-react';
 import type { PropertyListItem } from '@/shared/types/api';
 import { MEDIA_URL } from '@/shared/config/api';
 import { cn } from '@/lib/utils';
-import { formatRelativeDate, isNewListing } from '../lib/format';
+import { formatArea, formatRelativeDate, isNewListing } from '../lib/format';
 import { DealBadge, FeaturedBadge, NewBadge } from './property-badge';
 import { PriceTag } from './price-tag';
 import { FavoriteButton } from './favorite-button';
@@ -73,7 +73,7 @@ function MetaRow({ property, className }: { property: PropertyListItem; classNam
   const items: string[] = [];
   if (property.property_type?.name) items.push(property.property_type.name);
   if (property.rooms) items.push(`${property.rooms}-комн`);
-  if (property.area) items.push(`${property.area} м²`);
+  if (property.area) items.push(formatArea(property.area, property.property_type?.slug));
   return (
     <div
       className={cn(
@@ -261,7 +261,7 @@ function MiniCard({ property, className }: Required<Omit<PropertyCardProps, 'var
       <div className="flex flex-col gap-1 p-3">
         <PriceTag price={property.price} serviceSlug={property.service_type?.slug} size="md" />
         <div className="text-xs text-muted-foreground line-clamp-1">
-          {[property.rooms ? `${property.rooms}-комн` : null, property.area ? `${property.area} м²` : null]
+          {[property.rooms ? `${property.rooms}-комн` : null, property.area ? formatArea(property.area, property.property_type?.slug) : null]
             .filter(Boolean)
             .join(' · ')}
         </div>

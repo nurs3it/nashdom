@@ -20,7 +20,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { propertiesApi } from '@/shared/api';
 import { MEDIA_URL } from '@/shared/config/api';
 import type { Property } from '@/shared/types/api';
-import { LocationPicker } from '@/entities/property';
+import { LocationPicker, areaInputToSqm, isLandType, sqmToAreaInput } from '@/entities/property';
 import { cn } from '@/lib/utils';
 
 interface PropertyFormProps {
@@ -50,7 +50,8 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
     city: property?.city ?? '',
     district: property?.district ?? '',
     address: property?.address ?? '',
-    area: property?.area?.toString() ?? '',
+    // В БД площадь всегда в м². Для участка показываем введённое значение в гектарах.
+    area: property?.area != null ? String(sqmToAreaInput(property.area, property.property_type?.slug)) : '',
     rooms: property?.rooms?.toString() ?? '',
     floor: property?.floor?.toString() ?? '',
     total_floors: property?.total_floors?.toString() ?? '',
@@ -74,6 +75,10 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
     queryKey: ['service-types'],
     queryFn: propertiesApi.getServiceTypes,
   });
+
+  // Для участка площадь вводится и показывается в гектарах (в БД хранится в м²).
+  const selectedType = propertyTypes?.find((t) => String(t.id) === formData.property_type);
+  const isLand = isLandType(selectedType?.slug);
 
   const mutation = useMutation({
     mutationFn: async (data: FormData) => {
@@ -126,7 +131,7 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
     fd.append('city', formData.city);
     fd.append('district', formData.district);
     fd.append('address', formData.address);
-    fd.append('area', formData.area);
+    fd.append('area', String(areaInputToSqm(parseFloat(formData.area), selectedType?.slug)));
     if (formData.rooms) fd.append('rooms', formData.rooms);
     if (formData.floor) fd.append('floor', formData.floor);
     if (formData.total_floors) fd.append('total_floors', formData.total_floors);
@@ -211,14 +216,14 @@ export function PropertyForm({ property, onSuccess, onCancel }: PropertyFormProp
               className="h-11 tabular-nums"
             />
           </Field>
-          <Field id="area" label="Площадь, м²" required error={errors.area} icon={<Ruler className="h-4 w-4" />}>
+          <Field id="area" label={isLand ? 'Площадь, га' : 'Площадь, м²'} required error={errors.area} icon={<Ruler className="h-4 w-4" />}>
             <Input
               id="area"
               type="number"
               inputMode="decimal"
               min={0}
-              step={0.1}
-              placeholder="64"
+              step={isLand ? 0.01 : 0.1}
+              placeholder={isLand ? '0.12' : '64'}
               value={formData.area}
               onChange={(e) => set('area', e.target.value)}
               aria-invalid={!!errors.area}
