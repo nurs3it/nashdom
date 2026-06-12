@@ -4,6 +4,7 @@ import { Manrope, Unbounded } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/next";
 
 const manrope = Manrope({
   subsets: ["latin", "cyrillic"],
@@ -50,6 +51,7 @@ export default function RootLayout({
           {children}
           <Toaster richColors closeButton position="top-right" />
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
